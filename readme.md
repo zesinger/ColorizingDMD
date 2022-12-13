@@ -21,5 +21,5 @@ As of now, the Serum format is only available for virtual pinball emulation, but
 So, as a colorization author using Serum, you must accept to share it for free for real pinball machines too.
 Asking for donation is anyway possible and I even encourage users to donate to colorization authors for the huge amount of time they spent on it!
 
-3/ It is important to me that all the things I code or create remain in the open-source DIY side, so any concept from my code (like colour rotations or sprites) CAN NOT be used in encrypted/protected/closed-source code/file format!
+3/ It is important to me that all the things I code or create remain in the open-source DIY side, so any concept from my code (like colour rotations or sprites) CAN NOT be used in encrypted/protected/closed-source code/file format but freely for any open-source project!
 

@@ -4563,6 +4563,7 @@ LRESULT CALLBACK WndProc(HWND hWin, UINT message, WPARAM wParam, LPARAM lParam)
     {
         if (Paste_Mode) SetCursor(hcPaste);
         else if (Color_Pipette) SetCursor(hcColPick);
+        else DefWindowProc(hWin, message, wParam, lParam);
         return TRUE;
     }
     case WM_GETMINMAXINFO:
@@ -6048,6 +6049,7 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
         {
             if (Paste_Mode) SetCursor(hcPaste);
             else if (Color_Pipette) SetCursor(hcColPick);
+            else DefWindowProc(hWin, message, wParam, lParam);
             return TRUE;
         }
         case WM_NOTIFY:

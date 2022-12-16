@@ -1519,9 +1519,7 @@ void Delete_Sprite(int nospr)
     if (nospr < (int)MycRom.nSprites - 1)
     {
         memmove(&MycRom.SpriteDescriptions[nospr * MAX_SPRITE_SIZE * MAX_SPRITE_SIZE], &MycRom.SpriteDescriptions[(nospr + 1) * MAX_SPRITE_SIZE * MAX_SPRITE_SIZE], sizeof(UINT16) * (MycRom.nSprites - 1 - nospr) * MAX_SPRITE_SIZE * MAX_SPRITE_SIZE);
-        //memmove(&MycRom.SpriteDetectDwordPos[nospr], &MycRom.SpriteDetectDwordPos[nospr + 1], sizeof(UINT16) * (MycRom.nSprites - 1 - nospr));
-        //memmove(&MycRom.SpriteDetectDwords[nospr], &MycRom.SpriteDetectDwords[nospr + 1], sizeof(UINT32) * (MycRom.nSprites - 1 - nospr));
-        memmove(&MycRP.Sprite_Col_From_Frame[nospr], &MycRP.Sprite_Col_From_Frame[nospr], sizeof(UINT32) * (MycRom.nSprites - 1 - nospr));
+        memmove(&MycRP.Sprite_Col_From_Frame[nospr], &MycRP.Sprite_Col_From_Frame[nospr + 1], sizeof(UINT32) * (MycRom.nSprites - 1 - nospr));
         memmove(&MycRP.Sprite_Edit_Colors[16 * nospr], &MycRP.Sprite_Edit_Colors[16 * (nospr + 1)], (MycRom.nSprites - 1 - nospr) * 16);
         memmove(&MycRP.Sprite_Names[SIZE_SECTION_NAMES * nospr], &MycRP.Sprite_Names[SIZE_SECTION_NAMES * (nospr + 1)], (MycRom.nSprites - 1 - nospr) * SIZE_SECTION_NAMES);
         memmove(&MycRom.SpriteDetDwordPos[nospr * MAX_SPRITE_DETECT_AREAS], &MycRom.SpriteDetDwordPos[(nospr + 1) * MAX_SPRITE_DETECT_AREAS], sizeof(UINT16) * (MycRom.nSprites - 1 - nospr) * MAX_SPRITE_DETECT_AREAS);

@@ -60,7 +60,9 @@ UINT Comparison_Mode = 0; // 0- no mask mode, 1- exclusion mask mode, 2- horizon
 bool isLoadedProject = false; // is there a project loaded?
 HIMAGELIST g_hImageList = NULL, g_hImageListD = NULL;
 
-char DumpDir[MAX_PATH] = "C:\\visual pinball\\VPinMame\\dmddump\\";
+char DumpDir[MAX_PATH] = "D:\\visual pinball\\VPinMame\\dmddump\\";
+bool Ask_for_SaveDir = true;
+
 cRom_struct MycRom = { "",0,0,0,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL };
 cRP_struct MycRP = { "",{FALSE},{0},0,0,{0},FALSE,0,FALSE };
 
@@ -1333,10 +1335,7 @@ void Add_Surface_To_Copy(UINT8* Surface, bool isDel)
     {
         if (Surface[ti] > 0)
         {
-            if (!isDel)
-                Copy_Mask[ti] = 1;
-            else
-                Copy_Mask[ti] = 0;
+            if (!isDel) Copy_Mask[ti] = 1; else Copy_Mask[ti] = 0;
             // we copy the whole frame anyway in case we invert the mask later on
         }
         Copy_Col[ti] = MycRom.cFrames[acFrame * MycRom.fWidth * MycRom.fHeight + ti];
@@ -3024,11 +3023,13 @@ void LoadSaveDir(void)
     FILE* pfile;
     if (fopen_s(&pfile, "SaveDir.pos", "rb") != 0)
     {
-        cprintf("No save directory file found, using default");
+        //cprintf("No save directory file found, using default");
         strcpy_s(MycRP.SaveDir, 260, DumpDir);
+        Ask_for_SaveDir = true;
         return;
     }
     fread(MycRP.SaveDir, 1, MAX_PATH, pfile);
+    Ask_for_SaveDir = false;
     fclose(pfile);
 }
 
@@ -3158,7 +3159,7 @@ bool Save_cRom(bool autosave)
     }
     // Calculating the sprites detection DWords
     if (!Set_Detection_Dwords()) return false;
-    if (GetKeyState(VK_SHIFT) & 0x8000)
+    if ((GetKeyState(VK_SHIFT) & 0x8000) || (Ask_for_SaveDir == true))
     {
         BROWSEINFOA bi;
         bi.hwndOwner = hWnd;
@@ -3172,6 +3173,7 @@ bool Save_cRom(bool autosave)
         LPITEMIDLIST piil;
         piil = SHBrowseForFolderA(&bi);
         if (!piil) return false;
+        Ask_for_SaveDir = false;
         SHGetPathFromIDListA(piil, MycRP.SaveDir);
         if (MycRP.SaveDir[strlen(MycRP.SaveDir) - 1] != '\\') strcat_s(MycRP.SaveDir, MAX_PATH, "\\");
         CoTaskMemFree(piil);
@@ -5971,6 +5973,7 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
                 case IDC_ADDSPRITE2:
                 {
                     if (MycRom.name[0] == 0) return TRUE;
+                    if (MycRom.nSprites == 0) return TRUE;
                     for (UINT ti = 0; ti < MAX_SPRITES_PER_FRAME; ti++)
                     {
                         if (MycRom.FrameSprites[acFrame * MAX_SPRITES_PER_FRAME + ti] == acSprite) return TRUE;
@@ -6049,7 +6052,7 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
         {
             if (Paste_Mode) SetCursor(hcPaste);
             else if (Color_Pipette) SetCursor(hcColPick);
-            else DefWindowProc(hWin, message, wParam, lParam);
+            else DefWindowProc(hDlg, message, wParam, lParam);
             return TRUE;
         }
         case WM_NOTIFY:
@@ -6226,6 +6229,7 @@ INT_PTR CALLBACK Toolbar_Proc2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
             case IDC_PASTE:
             {
                 if (MycRom.name[0] == 0) return TRUE;
+                if (MycRom.nSprites == 0) return TRUE;
                 UpdateSSneeded = true;
                 MycRP.Sprite_Col_From_Frame[acSprite] = acFrame;
                 SaveAction(true, SA_SPRITE);
@@ -6349,6 +6353,7 @@ INT_PTR CALLBACK Toolbar_Proc2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
             case IDC_DELDETSPR:
             {
                 if (MycRom.name[0] == 0) return TRUE;
+                if (MycRom.nSprites == 0) return TRUE;
                 SaveAction(true, SA_SPRITE);
                 MycRom.SpriteDetAreas[acSprite * 4 * MAX_SPRITE_DETECT_AREAS + acDetSprite * 4] = 255;
                 return TRUE;
@@ -6356,6 +6361,7 @@ INT_PTR CALLBACK Toolbar_Proc2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
             case IDC_TOFRAME:
             {
                 if (MycRom.name[0] == 0) return TRUE;
+                if (MycRom.nSprites == 0) return TRUE;
                 acFrame = MycRP.Sprite_Col_From_Frame[acSprite];
                 if (acFrame >= MycRom.nFrames) acFrame = MycRom.nFrames - 1;
                 if (acFrame >= PreFrameInStrip + NFrameToDraw) PreFrameInStrip = acFrame - NFrameToDraw + 1;
@@ -6399,7 +6405,7 @@ void CheckAccelerators(void)
     if (!(GetKeyState('F') & 0x8000)) isFReleased = true;
     if (!(GetKeyState('C') & 0x8000)) isCReleased = true;
     if (!(GetKeyState('A') & 0x8000)) isAReleased = true;
-    if (!(GetKeyState('D') & 0x8000)) isAReleased = true;
+    if (!(GetKeyState('D') & 0x8000)) isDReleased = true;
     if (!(GetKeyState('V') & 0x8000)) isVReleased = true;
     if (!(GetKeyState(VK_RETURN) & 0x8000)) isEnterReleased = true;
     if (GetForegroundWindow() == hWnd)
@@ -6445,7 +6451,8 @@ void CheckAccelerators(void)
                     else
                     {
                         SaveAction(true, SA_COPYMASK);
-                        memset(Copy_Mask, 1, MycRom.fWidth * MycRom.fHeight);
+                        memset(Draw_Extra_Surface, 1, 256 * 64);
+                        Add_Surface_To_Copy(Draw_Extra_Surface, false);
                     }
                     isAReleased = false;
                 }
@@ -6463,7 +6470,8 @@ void CheckAccelerators(void)
                     else
                     {
                         SaveAction(true, SA_COPYMASK);
-                        memset(Copy_Mask, 0, MycRom.fWidth * MycRom.fHeight);
+                        memset(Draw_Extra_Surface, 1, 256 * 64);
+                        Add_Surface_To_Copy(Draw_Extra_Surface, true);
                     }
                     isDReleased = false;
                 }
@@ -6817,7 +6825,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                         // point mode
                         SaveAction(true, SA_COPYMASK);
                         Mouse_Mode = 7;
-                        if (!isDel_Mode) Copy_Mask[ygrid * MycRom.fWidth + xgrid] = 1; else Copy_Mask[ygrid * MycRom.fWidth + xgrid] = 0;
+                        int ti= ygrid * MycRom.fWidth + xgrid;
+                        if (!isDel_Mode) Copy_Mask[ti] = 1;
+                        else Copy_Mask[ti] = 0;
+                        Copy_Col[ti] = MycRom.cFrames[acFrame * MycRom.fWidth * MycRom.fHeight + ti];
+                        Copy_Colo[ti] = MycRP.oFrames[acFrame * MycRom.fWidth * MycRom.fHeight + ti];
+                        Copy_Dyna[ti] = MycRom.DynaMasks[acFrame * MycRom.fWidth * MycRom.fHeight + ti];
                     }
                     else
                     {

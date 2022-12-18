@@ -1357,10 +1357,10 @@ void Add_Surface_To_Dyna(UINT8* Surface, bool isDel)
                     MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] = acDynaSet;
                 else
                 {
-                    MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] = 255;
+                    if (MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] < 255)
                     MycRom.cFrames[SelFrames[tj] * MycRom.fHeight * MycRom.fWidth + ti] =
                         MycRP.oFrames[SelFrames[tj] * MycRom.fHeight * MycRom.fWidth + ti];
-
+                    MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] = 255;
                 }
             }
         }
@@ -6505,9 +6505,12 @@ void CheckAccelerators(void)
                         SaveAction(true, SA_DYNAMASK);
                         for (UINT ti = 0; ti < nSelFrames; ti++)
                         {
-                            memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], 255, MycRom.fWidth * MycRom.fHeight);
                             for (UINT tj = 0; tj < MycRom.fWidth * MycRom.fHeight; tj++)
+                            {
+                                if (MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight+tj]<255)
                                 MycRom.cFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj] = MycRP.oFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj];
+                            }
+                            memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], 255, MycRom.fWidth * MycRom.fHeight);
                         }
                     }
                 }
@@ -6519,6 +6522,11 @@ void CheckAccelerators(void)
                     SaveAction(true, SA_DYNAMASK);
                     for (UINT ti = 0; ti < nSelFrames; ti++)
                     {
+                        for (UINT tj = 0; tj < MycRom.fWidth * MycRom.fHeight; tj++)
+                        {
+                            if (MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight + tj] < 255)
+                                MycRom.cFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj] = MycRP.oFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj];
+                        }
                         memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], 255, MycRom.fWidth * MycRom.fHeight);
                     }
                 }
@@ -6887,9 +6895,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                             if (!isDel_Mode) MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = acDynaSet;
                             else
                             {
+                                    if (MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] < 255)
+                                        MycRom.cFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] =
+                                        MycRP.oFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid];
                                 MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = 255;
-                                MycRom.cFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] =
-                                    MycRP.oFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid];
                             }
                         }
                     }

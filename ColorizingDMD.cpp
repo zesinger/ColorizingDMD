@@ -1356,7 +1356,12 @@ void Add_Surface_To_Dyna(UINT8* Surface, bool isDel)
                 if (!isDel)
                     MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] = acDynaSet;
                 else
+                {
                     MycRom.DynaMasks[SelFrames[tj] * MycRom.fWidth * MycRom.fHeight + ti] = 255;
+                    MycRom.cFrames[SelFrames[tj] * MycRom.fHeight * MycRom.fWidth + ti] =
+                        MycRP.oFrames[SelFrames[tj] * MycRom.fHeight * MycRom.fWidth + ti];
+
+                }
             }
         }
     }
@@ -5957,19 +5962,19 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
                     }
                     return TRUE;
                 }
-                case IDC_INVERTSEL3:
+/*                case IDC_INVERTSEL3:
                 {
                     if (MycRom.name[0] == 0) return TRUE;
-/*                    SaveAction(true, SA_DYNAMASK);
+                    SaveAction(true, SA_DYNAMASK);
                     for (UINT ti = 0; ti < nSelFrames; ti++)
                     {
                         for (UINT tj = 0; tj < MycRom.fWidth * MycRom.fHeight; tj++)
                         {
                             if (MycRom.DynaMasks[SelFrames[ti* MycRom.fWidth * MycRom.fHeight+tj])
                         }
-                    }*/
+                    }
                     return TRUE;
-                }
+                }*/
                 case IDC_ADDSPRITE2:
                 {
                     if (MycRom.name[0] == 0) return TRUE;
@@ -6394,7 +6399,7 @@ INT_PTR CALLBACK Toolbar_Proc2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
     return (INT_PTR)FALSE;
 }
 
-bool isSReleased = false, isEnterReleased = false, isZReleased = false, isYReleased = false, isMReleased = false, isAReleased = false, isCReleased = false, isVReleased = false, isFReleased = false, isDReleased = false;
+bool isSReleased = false, isEnterReleased = false, isZReleased = false, isYReleased = false, isMReleased = false, isAReleased = false, isCReleased = false, isVReleased = false, isFReleased = false, isDReleased = false, isEReleased = false;
 
 void CheckAccelerators(void)
 {
@@ -6406,6 +6411,7 @@ void CheckAccelerators(void)
     if (!(GetKeyState('C') & 0x8000)) isCReleased = true;
     if (!(GetKeyState('A') & 0x8000)) isAReleased = true;
     if (!(GetKeyState('D') & 0x8000)) isDReleased = true;
+    if (!(GetKeyState('E') & 0x8000)) isEReleased = true;
     if (!(GetKeyState('V') & 0x8000)) isVReleased = true;
     if (!(GetKeyState(VK_RETURN) & 0x8000)) isEnterReleased = true;
     if (GetForegroundWindow() == hWnd)
@@ -6493,6 +6499,17 @@ void CheckAccelerators(void)
                         isVReleased = false;
                         if (IsWindowEnabled(GetDlgItem(hwTB, IDC_PASTE)) == TRUE) SendMessage(hwTB, WM_COMMAND, IDC_PASTE, 0);
                     }
+                    if ((isEReleased) && (GetKeyState('E') & 0x8000))
+                    {
+                        isEReleased = false;
+                        SaveAction(true, SA_DYNAMASK);
+                        for (UINT ti = 0; ti < nSelFrames; ti++)
+                        {
+                            memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], 255, MycRom.fWidth * MycRom.fHeight);
+                            for (UINT tj = 0; tj < MycRom.fWidth * MycRom.fHeight; tj++)
+                                MycRom.cFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj] = MycRP.oFrames[SelFrames[ti] * MycRom.fHeight * MycRom.fWidth + tj];
+                        }
+                    }
                 }
             }
             else if ((GetKeyState(VK_MENU) & 0x8000) && (!Paste_Mode) && (!Color_Pipette))
@@ -6500,12 +6517,18 @@ void CheckAccelerators(void)
                 if ((isDReleased) && (GetKeyState('D') & 0x8000) && (Edit_Mode == 1))
                 {
                     SaveAction(true, SA_DYNAMASK);
-                    memset(&MycRom.DynaMasks[acFrame * MycRom.fWidth * MycRom.fHeight], 0, MycRom.fWidth * MycRom.fHeight);
+                    for (UINT ti = 0; ti < nSelFrames; ti++)
+                    {
+                        memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], 255, MycRom.fWidth * MycRom.fHeight);
+                    }
                 }
                 if ((isDReleased) && (GetKeyState('A') & 0x8000) && (Edit_Mode == 1))
                 {
                     SaveAction(true, SA_DYNAMASK);
-                    memset(&MycRom.DynaMasks[acFrame * MycRom.fWidth * MycRom.fHeight], acDynaSet, MycRom.fWidth * MycRom.fHeight);
+                    for (UINT ti = 0; ti < nSelFrames; ti++)
+                    {
+                        memset(&MycRom.DynaMasks[SelFrames[ti] * MycRom.fWidth * MycRom.fHeight], acDynaSet, MycRom.fWidth * MycRom.fHeight);
+                    }
                 }
             }
             else
@@ -6655,7 +6678,12 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
             {
                 for (UINT32 ti = 0; ti < nSelFrames; ti++)
                 {
-                    if (isDel_Mode) MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] = 255;
+                    if (isDel_Mode)
+                    {
+                        MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] = 255;
+                        MycRom.cFrames[(SelFrames[ti] * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] =
+                            MycRP.oFrames[(SelFrames[ti] * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx];
+                    }
                     else MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] = acDynaSet;
                 }
                 break;
@@ -6856,8 +6884,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                         Mouse_Mode = 5;
                         for (UINT32 ti = 0; ti < nSelFrames; ti++)
                         {
-                            if (!isDel_Mode) MycRom.DynaMasks[(acFrame * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = acDynaSet;
-                            else MycRom.DynaMasks[(acFrame * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = 255;
+                            if (!isDel_Mode) MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = acDynaSet;
+                            else
+                            {
+                                MycRom.DynaMasks[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] = 255;
+                                MycRom.cFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid] =
+                                    MycRP.oFrames[(SelFrames[ti] * MycRom.fHeight + ygrid) * MycRom.fWidth + xgrid];
+                            }
                         }
                     }
                     else
@@ -7383,7 +7416,7 @@ bool CreateToolbar(void)
         SetIcon(GetDlgItem(hwTB, IDC_DELSECTION), IDI_DELTAB);
         SetIcon(GetDlgItem(hwTB, IDC_COLTODYNA), IDI_COLTODYNA);
         SetIcon(GetDlgItem(hwTB, IDC_INVERTSEL2), IDI_INVERTSEL);
-        SetIcon(GetDlgItem(hwTB, IDC_INVERTSEL3), IDI_INVERTSEL);
+        //SetIcon(GetDlgItem(hwTB, IDC_INVERTSEL3), IDI_INVERTSEL);
         SetIcon(GetDlgItem(hwTB, IDC_MOVESECTION), IDI_MOVESECTION);
         SetIcon(GetDlgItem(hwTB, IDC_ADDSPRITE2), IDI_ADDSPR);
         SetIcon(GetDlgItem(hwTB, IDC_DELSPRITE2), IDI_DELSPR);

@@ -6184,7 +6184,7 @@ INT_PTR CALLBACK Toolbar_Proc2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
                         for (UINT tj = 0; tj < MAX_SPRITES_PER_FRAME; tj++)
                         {
                             if (MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj] == acSprite) MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj] = 255;
-                            if (MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj] > acSprite) MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj]--;
+                            if ((MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj] > acSprite) && (MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj] != 255)) MycRom.FrameSprites[ti * MAX_SPRITES_PER_FRAME + tj]--;
                         }
                     }
                     Delete_Sprite(acSprite);

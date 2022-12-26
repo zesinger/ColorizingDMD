@@ -4107,7 +4107,6 @@ void Add_TXT_File(void)
         AddTXTFrames2Frame(nFrames, pFrames);
         free(TXTF_buffer);
         free(pFrames);
-        MycRom.nSprites = 0;
     }
     SetCurrentDirectoryA(acDir);
 }

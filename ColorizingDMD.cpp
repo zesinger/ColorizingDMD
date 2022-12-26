@@ -904,9 +904,9 @@ void CopyColAndDynaCol(UINT fromframe, UINT toframe)
     }
     for (UINT ti = 0; ti < MAX_DYNA_SETS_PER_FRAME; ti++)
     {
-        for (UINT tj = 0; tj < MycRom.ncColors; tj++)
+        for (UINT tj = 0; tj < MycRom.noColors; tj++)
         {
-            MycRom.Dyna4Cols[toframe * MAX_DYNA_SETS_PER_FRAME * MycRom.ncColors + ti * MycRom.ncColors + tj] = MycRom.Dyna4Cols[fromframe * MAX_DYNA_SETS_PER_FRAME * MycRom.ncColors + ti * MycRom.ncColors + tj];
+            MycRom.Dyna4Cols[toframe * MAX_DYNA_SETS_PER_FRAME * MycRom.noColors + ti * MycRom.noColors + tj] = MycRom.Dyna4Cols[fromframe * MAX_DYNA_SETS_PER_FRAME * MycRom.noColors + ti * MycRom.noColors + tj];
         }
     }
 }
@@ -1510,7 +1510,7 @@ int Which_Section(UINT nofr)
 
 void Delete_Section(int nosec)
 {
-    for (int ti = nosec; ti < (int)MycRP.nSections - 2; ti++)
+    for (int ti = nosec; ti < (int)MycRP.nSections - 1; ti++)
     {
         MycRP.Section_Firsts[ti] = MycRP.Section_Firsts[ti+1];
         for (int tj = 0; tj < SIZE_SECTION_NAMES; tj++) MycRP.Section_Names[ti * SIZE_SECTION_NAMES + tj] = MycRP.Section_Names[(ti + 1) * SIZE_SECTION_NAMES + tj];
@@ -6764,6 +6764,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                 }
                 else if (Paste_Mode)
                 {
+                    SaveAction(true, SA_DYNACOLOR);
+                    SaveAction(true, SA_PALETTE);
                     SaveAction(true, SA_DRAW);
                     for (UINT32 tk = 0; tk < nSelFrames; tk++)
                     {

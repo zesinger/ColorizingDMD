@@ -5954,7 +5954,7 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
                 case IDC_INVERTSEL2:
                 {
                     if (MycRom.name[0] == 0) return TRUE;
-                    SaveAction(true, SA_SPRITE);
+                    SaveAction(true, SA_COPYMASK);
                     for (UINT ti = 0; ti < MycRom.fWidth * MycRom.fHeight; ti++)
                     {
                         // the whole frame has been copied to col and dyna, so we just invert the mask

@@ -1189,7 +1189,8 @@ void Delete_Frame(UINT32 nofr)
     {
         int nfrdecal = MycRom.nFrames - nofr - 1;
         memcpy(&MycRom.HashCode[nofr], &MycRom.HashCode[nofr + 1], sizeof(UINT32) * nfrdecal);
-        memcpy(&MycRom.CompMaskID[nofr], & MycRom.CompMaskID[nofr + 1], nfrdecal);
+        memcpy(&MycRom.CompMaskID[nofr], &MycRom.CompMaskID[nofr + 1], nfrdecal);
+        memcpy(&MycRom.ShapeCompMode[nofr], &MycRom.ShapeCompMode[nofr + 1], nfrdecal);
         memcpy(&MycRom.MovRctID[nofr], &MycRom.MovRctID[nofr + 1], nfrdecal);
         UINT32 toffd = nofr * MycRom.fWidth * MycRom.fHeight;
         UINT32 toffs = (nofr + 1) * MycRom.fWidth * MycRom.fHeight;

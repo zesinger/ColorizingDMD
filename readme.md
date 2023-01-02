@@ -16,6 +16,8 @@ Zed
 I DON'T EARN a thing from them (except perhaps some kind feedbacks and a place in the vpin world), not even a single Euro!
 My ZeDMD may be sold by any reseller who wants to but I don't want to get anything AT ALL from that!
 
+The only request is that any code, device or whatever linked to/coming from the ZeDMD, Serum or ColoirizingDMD projects MUST be called as "ZeDMD ..." or "Serum ..." and ostensibly visible. And a link to their respective Github should me provided.
+
 2/ Thus, if you create a colorized ROM Serum with it, you must accept the fact that you will share it for free.
 As of now, the Serum format is only available for virtual pinball emulation, but I accepted that Markus Kalkbrenner integrates the ZeDMD and, perhaps later on, the Serum to its open-source and DIY PPUC which may bring the Serum format to the real pinball machines!
 So, as a colorization author using Serum, you must accept to share it for free for real pinball machines too.

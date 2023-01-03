@@ -1790,21 +1790,25 @@ void EmptyExtraSurface2(void)
     memset(Draw_Extra_Surface2, 0, MAX_SPRITE_SIZE * MAX_SPRITE_SIZE);
 }
 
-void putpixel(int x, int y, UINT8* surface, UINT8 color)
+void putpixel(int x, int y, UINT8* surface, UINT8 color, bool coloronly, byte* frame)
 {
     // set a pixel in a monochrome memory surface or frame
     if ((x < 0) || (x >= (int)MycRom.fWidth) || (y < 0) || (y >= (int)MycRom.fHeight)) return;
+    if (coloronly) // do we just mask the non-0 pixels
+    {
+        if (frame[y * MycRom.fWidth + x] == 0) return;
+    }
     surface[y * MycRom.fWidth + x] = color;
 }
 
 void putpixel2(int x, int y, UINT8* surface, UINT8 color)
 {
-    // set a pixel in a monochrome memory surface or frame
+    // set a pixel in a monochrome memory surface or frame for sprites
     if ((x < 0) || (x >= (int)MAX_SPRITE_SIZE) || (y < 0) || (y >= (int)MAX_SPRITE_SIZE)) return;
     surface[y * MAX_SPRITE_SIZE + x] = color;
 }
 
-void drawline(int x, int y, int x2, int y2, UINT8* surface, UINT8 color)
+void drawline(int x, int y, int x2, int y2, UINT8* surface, UINT8 color, bool coloronly, byte* frame)
 {
     int w = x2 - x;
     int h = y2 - y;
@@ -1827,7 +1831,7 @@ void drawline(int x, int y, int x2, int y2, UINT8* surface, UINT8 color)
     int numerator = longest >> 1;
     for (int i = 0; i <= longest; i++)
     {
-        putpixel(x, y, surface, color);
+        putpixel(x, y, surface, color, coloronly, frame);
         numerator += shortest;
         if (!(numerator < longest))
         {
@@ -1880,34 +1884,34 @@ void drawline2(int x, int y, int x2, int y2, UINT8* surface, UINT8 color)
     }
 }
 
-void drawAllOctantsF(int xc, int yc, int xp, int yp, UINT8* surface, UINT8 color)
+void drawAllOctantsF(int xc, int yc, int xp, int yp, UINT8* surface, UINT8 color, bool coloronly, byte* frame)
 {
     for (int x = 0; x <= xp; x++)
     {
         for (int y = 0; y <= yp; y++)
         {
-            putpixel(xc + x, yc + y, surface, color);
-            putpixel(xc - x, yc + y, surface, color);
-            putpixel(xc + x, yc - y, surface, color);
-            putpixel(xc - x, yc - y, surface, color);
-            putpixel(xc + y, yc + x, surface, color);
-            putpixel(xc - y, yc + x, surface, color);
-            putpixel(xc + y, yc - x, surface, color);
-            putpixel(xc - y, yc - x, surface, color);
+            putpixel(xc + x, yc + y, surface, color, coloronly, frame);
+            putpixel(xc - x, yc + y, surface, color, coloronly, frame);
+            putpixel(xc + x, yc - y, surface, color, coloronly, frame);
+            putpixel(xc - x, yc - y, surface, color, coloronly, frame);
+            putpixel(xc + y, yc + x, surface, color, coloronly, frame);
+            putpixel(xc - y, yc + x, surface, color, coloronly, frame);
+            putpixel(xc + y, yc - x, surface, color, coloronly, frame);
+            putpixel(xc - y, yc - x, surface, color, coloronly, frame);
         }
     }
 }
 
-void drawAllOctants(int xc, int yc, int x, int y, UINT8* surface, UINT8 color)
+void drawAllOctants(int xc, int yc, int x, int y, UINT8* surface, UINT8 color, bool coloronly, byte* frame)
 {
-    putpixel(xc + x, yc + y, surface, color);
-    putpixel(xc - x, yc + y, surface, color);
-    putpixel(xc + x, yc - y, surface, color);
-    putpixel(xc - x, yc - y, surface, color);
-    putpixel(xc + y, yc + x, surface, color);
-    putpixel(xc - y, yc + x, surface, color);
-    putpixel(xc + y, yc - x, surface, color);
-    putpixel(xc - y, yc - x, surface, color);
+    putpixel(xc + x, yc + y, surface, color, coloronly, frame);
+    putpixel(xc - x, yc + y, surface, color, coloronly, frame);
+    putpixel(xc + x, yc - y, surface, color, coloronly, frame);
+    putpixel(xc - x, yc - y, surface, color, coloronly, frame);
+    putpixel(xc + y, yc + x, surface, color, coloronly, frame);
+    putpixel(xc - y, yc + x, surface, color, coloronly, frame);
+    putpixel(xc + y, yc - x, surface, color, coloronly, frame);
+    putpixel(xc - y, yc - x, surface, color, coloronly, frame);
 }
 
 
@@ -1941,12 +1945,12 @@ void drawAllOctants2(int xc, int yc, int x, int y, UINT8* surface, UINT8 color)
     putpixel2(xc - y, yc - x, surface, color);
 }
 
-void drawcircle(int xc, int yc, int r, UINT8* surface, UINT8 color, BOOL filled)
+void drawcircle(int xc, int yc, int r, UINT8* surface, UINT8 color, BOOL filled, bool coloronly, byte* frame)
 {
     // draw a circle with the bresenham algorithm in a monochrome memory surface (same size as the frames) or frame
     int x = 0, y = r;
     int d = 3 - 2 * r;
-    if (!filled) drawAllOctants(xc, yc, x, y, surface, color); else drawAllOctantsF(xc, yc, x, y, surface, color);
+    if (!filled) drawAllOctants(xc, yc, x, y, surface, color, coloronly, frame); else drawAllOctantsF(xc, yc, x, y, surface, color, coloronly, frame);
     while (y >= x)
     {
         x++;
@@ -1957,7 +1961,7 @@ void drawcircle(int xc, int yc, int r, UINT8* surface, UINT8 color, BOOL filled)
         }
         else
             d = d + 4 * x + 6;
-        if (!filled) drawAllOctants(xc, yc, x, y, surface, color); else drawAllOctantsF(xc, yc, x, y, surface, color);
+        if (!filled) drawAllOctants(xc, yc, x, y, surface, color, coloronly, frame); else drawAllOctantsF(xc, yc, x, y, surface, color, coloronly, frame);
     }
 }
 
@@ -1981,13 +1985,17 @@ void drawcircle2(int xc, int yc, int r, UINT8* surface, UINT8 color, BOOL filled
     }
 }
 
-void drawrectangle(int x, int y, int x2, int y2, UINT8* surface, UINT8 color, BOOL isfilled)
+void drawrectangle(int x, int y, int x2, int y2, UINT8* surface, UINT8 color, BOOL isfilled, bool coloronly, byte* frame)
 {
     for (int tj = min(x, x2); tj <= max(x, x2); tj++)
     {
         for (int ti = min(y, y2); ti <= max(y, y2); ti++)
         {
             if ((tj != x) && (tj != x2) && (ti != y) && (ti != y2) && (!isfilled)) continue;
+            if (coloronly) // do we just mask the non-0 pixels
+            {
+                if (frame[ti * MycRom.fWidth + tj] == 0) continue;
+            }
             surface[ti * MycRom.fWidth + tj] = color;
         }
     }
@@ -1995,6 +2003,7 @@ void drawrectangle(int x, int y, int x2, int y2, UINT8* surface, UINT8 color, BO
 
 void drawrectangle2(int x, int y, int x2, int y2, UINT8* surface, UINT8 color, BOOL isfilled)
 {
+    // for sprites
     for (int tj = min(x, x2); tj <= max(x, x2); tj++)
     {
         for (int ti = min(y, y2); ti <= max(y, y2); ti++)
@@ -5939,6 +5948,7 @@ INT_PTR CALLBACK Toolbar_Proc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
                 case IDC_INVERTSEL:
                 {
                     if (MycRom.name[0] == 0) return TRUE;
+                    SaveAction(true, SA_COMPMASK);
                     UINT nomsk = (UINT)MycRom.CompMaskID[acFrame];
                     if (nomsk < 255)
                     {
@@ -6699,7 +6709,11 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
             case 7:
             {
                 if (isDel_Mode) Copy_Mask[MouseFinPosy * MycRom.fWidth + MouseFinPosx] = 0;
-                else Copy_Mask[MouseFinPosy * MycRom.fWidth + MouseFinPosx] = 1;
+                else
+                {
+                    if (!(GetKeyState('W') & 0x8000) || (MycRom.cFrames[(acFrame * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] != 0))
+                        Copy_Mask[MouseFinPosy * MycRom.fWidth + MouseFinPosx] = 1;
+                }
                 break;
             }
         }
@@ -8017,7 +8031,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         switch (MycRP.Mask_Sel_Mode)
                         {
                             case 1:
-                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, TRUE);
+                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, TRUE, false, NULL);
                                 break;
                             case 2:
                                 drawfill2(MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1);
@@ -8043,17 +8057,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         {
                             case 1:
                             {
-                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1);
+                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, false, NULL);
                                 break;
                             }
                             case 2:
                             {
-                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode, false, NULL);
                                 break;
                             }
                             case 3:
                             {
-                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx) * (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx)* (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode, false, NULL);
                                 break;
                             }
                             case 4:
@@ -8080,17 +8094,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         {
                             case 1:
                             {
-                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1);
+                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, false, NULL);
                                 break;
                             }
                             case 2:
                             {
-                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode, false, NULL);
                                 break;
                             }
                             case 3:
                             {
-                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx) * (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx) * (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode, false, NULL);
                                 break;
                             }
                             case 4:
@@ -8103,30 +8117,33 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         Draw_Over_From_Surface(Draw_Extra_Surface, 0, (float)frame_zoom, true, true);
                         break;
                     }
-                    case 7: // drawing th copy mask (point)
+                    case 7: // drawing the copy mask (point)
                     {
-                        Draw_Extra_Surface[MouseFinPosx + MouseFinPosy * MycRom.fWidth] = 1;
+                        if (!(GetKeyState('W') & 0x8000) || (MycRom.cFrames[(acFrame * MycRom.fHeight + MouseFinPosy) * MycRom.fWidth + MouseFinPosx] != 0))
+                            Draw_Extra_Surface[MouseFinPosx + MouseFinPosy * MycRom.fWidth] = 1;
                         SetRenderDrawColor(0, mselcol, mselcol, 255);
                         Draw_Over_From_Surface(Draw_Extra_Surface, 0, (float)frame_zoom, true, true);
                         break;
                     }
                     case 8: // drawing the copy mask (others)
                     {
+                        bool shapeselect = false;
+                        if (GetKeyState('W') & 0x8000) shapeselect = true;
                         switch (MycRP.Draw_Mode)
                         {
                             case 1:
                             {
-                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1);
+                                drawline(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, shapeselect, &MycRom.cFrames[acFrame * MycRom.fWidth * MycRom.fHeight]);
                                 break;
                             }
                             case 2:
                             {
-                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawrectangle(MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, Draw_Extra_Surface, 1, MycRP.Fill_Mode, shapeselect, &MycRom.cFrames[acFrame * MycRom.fWidth * MycRom.fHeight]);
                                 break;
                             }
                             case 3:
                             {
-                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx) * (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode);
+                                drawcircle(MouseIniPosx, MouseIniPosy, (int)sqrt((MouseFinPosx - MouseIniPosx)* (MouseFinPosx - MouseIniPosx) + (MouseFinPosy - MouseIniPosy) * (MouseFinPosy - MouseIniPosy)), Draw_Extra_Surface, 1, MycRP.Fill_Mode, shapeselect, &MycRom.cFrames[acFrame * MycRom.fWidth * MycRom.fHeight]);
                                 break;
                             }
                             case 4:

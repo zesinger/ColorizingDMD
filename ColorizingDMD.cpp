@@ -3199,30 +3199,36 @@ bool Save_cRom(bool autosave)
     FILE* pfile;
     if (fopen_s(&pfile, tbuf, "wb") != 0)
     {
-/*        char tpath[MAX_PATH];
-        BROWSEINFOA bia;
-        bia.hwndOwner = hWnd;
-        bia.pidlRoot = NULL;
-        bia.pszDisplayName = tpath;
-        bia.lpszTitle = "Default save directory doesn't seem to exist, select one please:";
-        bia.ulFlags = BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS;
-        bia.lpfn = NULL;
-        //bia.iImage = NULL;
-        LPITEMIDLIST lpItem = SHBrowseForFolderA(&bia);
-        if (lpItem == NULL)
+        if (!(GetKeyState(VK_SHIFT) & 0x8000) && (Ask_for_SaveDir == false) && (!autosave))
+        {
+            BROWSEINFOA bi;
+            bi.hwndOwner = hWnd;
+            bi.pidlRoot = NULL;
+            //char tbuf2[MAX_PATH];
+            bi.pszDisplayName = MycRP.SaveDir;
+            bi.lpszTitle = "Choose a save directory...";
+            bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+            bi.lpfn = NULL;
+            bi.iImage = 0;
+            LPITEMIDLIST piil;
+            piil = SHBrowseForFolderA(&bi);
+            if (!piil) return false;
+            Ask_for_SaveDir = false;
+            SHGetPathFromIDListA(piil, MycRP.SaveDir);
+            if (MycRP.SaveDir[strlen(MycRP.SaveDir) - 1] != '\\') strcat_s(MycRP.SaveDir, MAX_PATH, "\\");
+            CoTaskMemFree(piil);
+            sprintf_s(tbuf, MAX_PATH, "%s%s.cROM", MycRP.SaveDir, MycRom.name);
+            if (fopen_s(&pfile, tbuf, "wb") != 0)
+            {
+                AffLastError((char*)"Save_cRom:fopen_s");
+                return false;
+            }
+        }
+        else
         {
             AffLastError((char*)"Save_cRom:fopen_s");
             return false;
         }
-        SHGetPathFromIDListA(lpItem, tpath);
-        if (tpath[strlen(tpath) - 1] != '\\') strcat_s(tpath, MAX_PATH, "\\");
-        strcpy_s(DumpDir, MAX_PATH, tpath);
-        sprintf_s(tbuf, MAX_PATH, "%s%s.cROM", MycRP.SaveDir, MycRom.name);
-        if (fopen_s(&pfile, tbuf, "wb") != 0)
-        {*/
-            AffLastError((char*)"Save_cRom:fopen_s");
-            return false;
-        //}
     }
     // we set to 0 to the content of the cframes where it's dynamic content to avoid keeping original frames values where unneeded
     for (UINT ti = 0; ti < MycRom.nFrames; ti++)
@@ -8201,7 +8207,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             GetClientRect(hWnd, &winrect);*/
             POINT tpt;
             GetCursorPos(&tpt);
-            sprintf_s(tbuf, 256, "ColorizingDMD v%i.%i (by Zedrummer)     ROM name: %s      Frame: %i/%i      @%.1fFPS", MAJ_VERSION,MIN_VERSION,MycRom.name, acFrame, MycRom.nFrames, fps);
+            if (((Mouse_Mode == 2) && (MycRP.Mask_Sel_Mode == 1)) || ((Mouse_Mode == 4) && (MycRP.Draw_Mode == 2)) ||
+                ((Mouse_Mode == 6) && (MycRP.Draw_Mode == 2)) || ((Mouse_Mode == 8) && (MycRP.Draw_Mode == 2)))
+                sprintf_s(tbuf, 256, "ColorizingDMD v%i.%i (by Zedrummer)     ROM name: %s      Frame: %i/%i      Pos: (%i,%i)->(%i,%i)      @%.1fFPS", MAJ_VERSION, MIN_VERSION, MycRom.name, acFrame, MycRom.nFrames, MouseIniPosx, MouseIniPosy, MouseFinPosx, MouseFinPosy, fps);
+            else
+                sprintf_s(tbuf, 256, "ColorizingDMD v%i.%i (by Zedrummer)     ROM name: %s      Frame: %i/%i      Pos: (%i,%i)      @%.1fFPS", MAJ_VERSION,MIN_VERSION,MycRom.name, acFrame, MycRom.nFrames, MouseFinPosx, MouseFinPosy, fps);
             SetWindowTextA(hWnd, tbuf);
             glfwPollEvents();
         }
